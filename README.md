@@ -109,7 +109,7 @@ Kal shaam 7 baje table book karni hai.
 4. In the Render service Environment tab, add a Secret File named `credentials.json` and paste the Google service-account JSON contents.
 5. Set `GOOGLE_CALENDAR_ID` to the shared Google Calendar ID or calendar email.
 6. Deploy.
-7. If Render gives the service a different URL than `https://thecodeforge.onrender.com`, update `BASE_URL`.
+7. If Render gives the service a different URL than `https://calls-manager.onrender.com`, update `BASE_URL`.
 8. Update Twilio webhook URLs to the Render URL.
 
 ## 9. Hindi, English, and Auto Switching
