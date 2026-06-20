@@ -1,0 +1,68 @@
+services:
+  - type: web
+    runtime: python
+    name: thecodeforge-booking-agent
+    plan: free
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_PHONE_NUMBER
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GOOGLE_CALENDAR_ID
+        sync: false
+      - key: GOOGLE_CREDENTIALS_FILE
+        value: /etc/secrets/credentials.json
+      - key: BASE_URL
+        value: https://thecodeforge-booking-agent.onrender.com
+      - key: BUSINESS_NAME
+        value: TheCodeForge
+      - key: BUSINESS_TYPE
+        value: web development service
+      - key: OPEN_DAYS
+        value: Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday
+      - key: OPEN_TIME
+        value: "00:00"
+      - key: CLOSE_TIME
+        value: "24:00"
+      - key: SLOT_DURATION_MINUTES
+        value: "30"
+      - key: TIMEZONE
+        value: Asia/Kolkata
+      - key: LLM_MODEL
+        value: llama-3.1-8b-instant
+      - key: MAX_TOKENS
+        value: "120"
+      - key: SPEECH_TIMEOUT
+        value: "3"
+      - key: MIN_SPEECH_CONFIDENCE
+        value: "0.4"
+      - key: DEFAULT_LANGUAGE
+        value: en
+      - key: DEFAULT_RECOGNITION_LANGUAGE
+        value: en-IN
+      - key: ENGLISH_RECOGNITION_LANGUAGE
+        value: en-IN
+      - key: HINDI_RECOGNITION_LANGUAGE
+        value: hi-IN
+      - key: HINGLISH_RECOGNITION_LANGUAGE
+        value: hi-IN
+      - key: TWILIO_SPEECH_MODEL
+        value: phone_call
+      - key: TWILIO_SPEECH_HINTS
+        value: website,web development,app development,ecommerce,shopify,wordpress,seo,landing page,portfolio,booking,consultation,TheCodeForge
+      - key: TTS_VOICE
+        value: en-IN-NeerjaNeural
+      - key: ENGLISH_TTS_VOICE
+        value: en-IN-NeerjaNeural
+      - key: HINDI_TTS_VOICE
+        value: hi-IN-SwaraNeural
+      - key: HINGLISH_TTS_VOICE
+        value: hi-IN-SwaraNeural
