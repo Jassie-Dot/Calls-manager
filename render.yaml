@@ -21,7 +21,7 @@ services:
       - key: GOOGLE_CREDENTIALS_FILE
         value: /etc/secrets/credentials.json
       - key: BASE_URL
-        value: https://thecodeforge-booking-agent.onrender.com
+        value: https://thecodeforge.onrender.com
       - key: BUSINESS_NAME
         value: TheCodeForge
       - key: BUSINESS_TYPE
