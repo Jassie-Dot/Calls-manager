@@ -34,7 +34,7 @@ async def incoming_call(request: Request) -> Response:
 
     greeting = language.bilingual_greeting(settings.BUSINESS_NAME)
     state.update_history(call_sid, "assistant", greeting)
-    return await _voice_response(greeting, profile, gather=True)
+    return await _voice_response(greeting, profile, gather=True, base_url=_request_base_url(request))
 
 
 @router.post("/handle-speech")
@@ -49,7 +49,7 @@ async def handle_speech(request: Request) -> Response:
 
     if not speech_result or confidence < settings.MIN_SPEECH_CONFIDENCE:
         reply = language.repeat_prompt(previous_profile)
-        return await _voice_response(reply, previous_profile, gather=True)
+        return await _voice_response(reply, previous_profile, gather=True, base_url=_request_base_url(request))
 
     profile = language.detect_language(speech_result, previous_profile.code)
     state.set_language(call_sid, profile.to_state())
@@ -77,9 +77,9 @@ async def handle_speech(request: Request) -> Response:
 
     if booking_confirmed:
         state.set_confirmed(call_sid, True)
-        return await _voice_response(response_text, profile, gather=False, hangup=True)
+        return await _voice_response(response_text, profile, gather=False, hangup=True, base_url=_request_base_url(request))
 
-    return await _voice_response(response_text, profile, gather=True)
+    return await _voice_response(response_text, profile, gather=True, base_url=_request_base_url(request))
 
 
 @router.post("/call-status")
@@ -190,13 +190,15 @@ async def _voice_response(
     text: str,
     profile: LanguageProfile,
     gather: bool,
+    base_url: str | None = None,
     hangup: bool = False,
 ) -> Response:
     twiml = VoiceResponse()
+    public_base_url = (base_url or settings.BASE_URL).rstrip("/")
 
     try:
         filename = await tts.synthesize(text, profile.tts_voice)
-        twiml.play(tts.get_audio_url(filename))
+        twiml.play(f"{public_base_url}/audio/{filename}")
     except Exception as exc:
         logger.warning("Falling back to Twilio Say because TTS failed: %s", exc)
         twiml.say(text)
@@ -204,7 +206,7 @@ async def _voice_response(
     if gather:
         gather_node = Gather(
             input="speech",
-            action=_action_url("/handle-speech"),
+            action=f"{public_base_url}/handle-speech",
             method="POST",
             speech_timeout=settings.SPEECH_TIMEOUT,
             speech_model=settings.TWILIO_SPEECH_MODEL,
@@ -220,10 +222,12 @@ async def _voice_response(
     return Response(content=str(twiml), media_type="text/xml")
 
 
-def _action_url(path: str) -> str:
-    if settings.BASE_URL:
-        return f"{settings.BASE_URL}{path}"
-    return path
+def _request_base_url(request: Request) -> str:
+    forwarded_proto = request.headers.get("x-forwarded-proto")
+    forwarded_host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    if forwarded_proto and forwarded_host:
+        return f"{forwarded_proto}://{forwarded_host}"
+    return str(request.base_url).rstrip("/")
 
 
 def _parse_confidence(value: Any) -> float:
